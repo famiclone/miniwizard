@@ -10,6 +10,7 @@ export default class App {
   };
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
+  zoom: number = 25;
   tool: "pencil" | "eraser" = "pencil";
   layer: number = 0;
   color: number = 1;
@@ -18,12 +19,13 @@ export default class App {
   startupDialog = new DialogElement("DialogStartup");
   helpDialog = new DialogElement("DialogHelp");
   inputCommand = new InputCommand("InputCmd", this);
+  zoomElement = document.querySelector("#zoom") as HTMLInputElement;
 
   constructor() {
     this.canvas = document.createElement("canvas") as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.canvas.style.backgroundColor = "white";
-
+    this.zoomElement.textContent = `${this.zoom * 100}%`;
     this.canvas.width = this.file.width;
     this.canvas.height = this.file.height;
 
@@ -36,18 +38,14 @@ export default class App {
 
     //zoom canvas
 
-    let zoom = 4;
-    this.canvas.style.width = `${this.file.width * zoom}px`;
-    this.canvas.style.height = `${this.file.height * zoom}px`;
+    this.canvas.style.width = `${this.file.width * this.zoom}px`;
+    this.canvas.style.height = `${this.file.height * this.zoom}px`;
     this.canvas.style.imageRendering = "pixelated";
 
     // ability to zoom in and out with mouse wheel
     this.canvas.addEventListener("wheel", (e) => {
       e.preventDefault();
-      const delta = Math.sign(e.deltaY);
-      zoom += delta;
-      this.canvas.style.width = `${this.file.width * zoom}px`;
-      this.canvas.style.height = `${this.file.height * zoom}px`;
+      this.zoomChange(e.deltaY);
     });
 
     document.body.querySelector("#main")!.append(this.canvas);
@@ -77,8 +75,8 @@ export default class App {
     this.canvas.addEventListener("click", (e) => {
       this.savePrevRev(this.ctx.getImageData(0, 0, 16, 16));
       const rect = this.canvas.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left) / zoom);
-      const y = Math.floor((e.clientY - rect.top) / zoom);
+      const x = Math.floor((e.clientX - rect.left) / this.zoom);
+      const y = Math.floor((e.clientY - rect.top) / this.zoom);
       const index = (y * 16 + x) * 4;
       imageData.data[index] = 0;
       imageData.data[index + 1] = 0;
@@ -94,8 +92,8 @@ export default class App {
       if (e.buttons === 1) {
         this.savePrevRev(this.ctx.getImageData(0, 0, 16, 16));
         const rect = this.canvas.getBoundingClientRect();
-        const x = Math.floor((e.clientX - rect.left) / zoom);
-        const y = Math.floor((e.clientY - rect.top) / zoom);
+        const x = Math.floor((e.clientX - rect.left) / this.zoom);
+        const y = Math.floor((e.clientY - rect.top) / this.zoom);
         const index = (y * 16 + x) * 4;
         imageData.data[index] = 0;
         imageData.data[index + 1] = 0;
@@ -108,6 +106,20 @@ export default class App {
 
     // ability to undo changes with cmd + z
     document.addEventListener("keydown", (e) => {
+      if (e.metaKey && e.key === "=") {
+        e.preventDefault();
+        this.zoomIn();
+
+        return;
+      }
+
+      if (e.metaKey && e.key === "-") {
+        e.preventDefault();
+        this.zoomOut();
+
+        return;
+      }
+
       switch (e.key) {
         case "?":
           e.preventDefault();
@@ -123,6 +135,14 @@ export default class App {
           }
       }
     });
+
+    this.update();
+  }
+
+  update() {
+    this.canvas.style.width = `${this.file.width * this.zoom}px`;
+    this.canvas.style.height = `${this.file.height * this.zoom}px`;
+    this.zoomElement.textContent = `${this.zoom * 100}%`;
   }
 
   newFile() {
@@ -141,6 +161,22 @@ export default class App {
   }
   saveNextRev(rev: ImageData | null) {
     this.history.next = rev;
+  }
+
+  zoomChange(dt: number = 0) {
+    const delta = Math.sign(dt);
+    this.zoom += delta * 8;
+    this.update();
+  }
+
+  zoomIn() {
+    console.log("zoom in");
+    this.zoomChange(1);
+  }
+
+  zoomOut() {
+    console.log("zoom out");
+    this.zoomChange(-1);
   }
 
   changeTool(tool: "pencil" | "eraser") {
