@@ -1,10 +1,29 @@
+:root {
+  --bg-color: #272822;
+  --fg-color: #f8f8f2;
+  --mid-color: #3e3d32;
+  --yellow: #e6db74;
+  --orange: #fd971f;
+  --red: #f92672;
+  --magenta: #fd5ff0;
+  --violet: #ae81ff;
+  --blue: #66d9ef;
+  --cyan: #a1efe4;
+  --green: #a6e22e;
+  --font-size: 0.9rem;
+}
+
 body {
   margin: 0;
   padding: 0;
-  background-color: black;
+  background-color: var(--bg-color);
+  color: var(--fg-color);
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100vh;
+  font-family: monospace;
+  font-size: var(--font-size);
 }
 
 main {
@@ -12,5 +31,104 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
+#ui {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  width: 100%;
+}
+
+.color-swatch {
+  width: 16px;
+  height: 16px;
+  background-color: white;
+}
+
+#toolbar {
+  background-color: var(--mid-color);
+  display: flex;
+  justify-content: space-between;
+}
+
+.tool-block {
+  display: flex;
+  align-items: center;
+}
+
+#zoom {
+  background-color: var(--green);
+  color: var(--bg-color);
+  padding: 0px 0.5rem;
+}
+
+.dialog {
+  background-color: var(--bg-color);
+  border-radius: 0.5rem;
+  border: 1px solid var(--mid-color);
+  color: var(--fg-color);
+  min-width: 320px;
+  width: 700px;
+}
+
+.d-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn {
+  background: none;
+  border: 1px solid var(--red);
+  padding: 0.5rem;
+  color: var(--red);
+  font-family: monospace;
+}
+
+.btn:hover {
+  color: var(--bg-color);
+  background-color: var(--red);
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+a {
+  color: var(--red);
+}
+
+b {
+  color: var(--yellow);
+}
+
+hr {
+  border-color: var(--mid-color);
+}
+
+.input {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--green);
+  color: var(--fg-color);
+  font-family: monospace;
+  width: 100%;
+  font-size: var(--font-size);
+}
+
+.tool-current {
+  background-color: var(--red);
+  padding: 0px 0.5rem;
+}
+
+.input--cmd {
+  display: none;
+}
+
+.input--cmd.open {
+  display: block;
+}
