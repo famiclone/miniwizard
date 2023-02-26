@@ -120,6 +120,10 @@ hr {
   font-size: var(--font-size);
 }
 
+.input:focus {
+  outline: none;
+}
+
 .tool-current {
   background-color: var(--red);
   padding: 0px 0.5rem;
