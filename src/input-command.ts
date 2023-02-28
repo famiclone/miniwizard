@@ -6,12 +6,21 @@ export default class InputCommand {
       this.app.newFile();
     }, // new
     e: () => {}, // open
-    w: () => {}, // save
+    w: () => {
+      this.app.saveFile();
+    }, // save
     h: () => {
-      this.app.helpDialog.toggle();
+      this.app.ui.helpDialog.toggle();
+      this.app.ui.log("Help");
     }, // help
-    p: () => {}, // current palette
+    p: () => {
+      this.app.ui.paletteDialog.toggle();
+      this.app.ui.log("Open palette");
+    }, // current palette
     P: () => {}, // palettes
+    log: (msg: string) => {
+      this.app.ui.log(msg);
+    },
   };
 
   element: HTMLInputElement;
@@ -41,8 +50,12 @@ export default class InputCommand {
   execute(cmd: string) {
     cmd = cmd.slice(1);
     const [command, ...args] = cmd.split(" ");
+
+    console.log(command, args);
     if (command in this.commands) {
       this.commands[command](...args);
+    } else {
+      this.app.ui.log(`command not found: ${command}`);
     }
   }
 }

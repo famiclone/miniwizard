@@ -1,13 +1,97 @@
 import DialogElement from "./dialog";
 import { WizFile } from "./file";
 import InputCommand from "./input-command";
-import { defaultPalette } from "./palette";
+import Palette, { defaultPalette } from "./palette";
+
+class History {
+  items: ImageData[] = [];
+  cursor: number = this.items.length - 1;
+
+  constructor(private app: App) {}
+
+  add(item: ImageData) {
+    this.items.push(item);
+    this.cursor = this.items.length - 1;
+  }
+
+  clearFromCursor() {
+    this.items.splice(this.cursor + 1);
+  }
+
+  undo() {
+    if (this.cursor > 0) {
+      this.cursor--;
+      this.app.ctx.putImageData(this.items[this.cursor], 0, 0);
+    }
+  }
+
+  redo() {
+    if (this.cursor < this.items.length - 1) {
+      this.cursor++;
+      this.app.ctx.putImageData(this.items[this.cursor], 0, 0);
+    }
+  }
+}
+
+class UI {
+  startupDialog = new DialogElement("DialogStartup");
+  helpDialog = new DialogElement("DialogHelp");
+  inputCommand = new InputCommand("InputCmd", this.app);
+  zoomElement = document.querySelector("#zoom") as HTMLInputElement;
+  primaryColorElement = document.querySelector("#toolPrColor") as HTMLElement;
+  statusLine = document.querySelector("#statusLine") as HTMLElement;
+  paletteDialog = new DialogElement("DialogPalette");
+  paletteWrap = document.querySelector("#paletteWrap") as HTMLElement;
+  paletteTitle = document.querySelector("#paletteTitle") as HTMLElement;
+  to: any;
+
+  constructor(private app: App) {
+    this.app = app;
+    if (
+      !window.localStorage.getItem("startup") ||
+      window.localStorage.getItem("startup") === "true"
+    ) {
+      this.startupDialog.open();
+    }
+
+    this.update();
+  }
+
+  renderPalette() {
+    this.paletteWrap.innerHTML = "";
+    this.paletteTitle.textContent = this.app.palette.name;
+    this.app.palette.colors.forEach((color, index) => {
+      const el = document.createElement("div");
+      el.classList.add("color-swatch");
+      el.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
+      this.paletteWrap.append(el);
+      el.addEventListener("click", () => {
+        this.app.primaryColor = color;
+        this.update();
+      });
+    });
+  }
+
+  log(msg: string) {
+    this.to && clearTimeout(this.to);
+    this.statusLine.classList.add("open");
+    this.statusLine.textContent = msg;
+
+    this.to = setTimeout(() => {
+      this.statusLine.classList.remove("open");
+      this.statusLine.textContent = "";
+    }, 2000);
+  }
+
+  update() {
+    this.renderPalette();
+    this.zoomElement.textContent = `${this.app.zoom * 100}%`;
+    this.primaryColorElement.style.backgroundColor = `rgba(${this.app.primaryColor[0]}, ${this.app.primaryColor[1]}, ${this.app.primaryColor[2]}, ${this.app.primaryColor[3]})`;
+  }
+}
 
 export default class App {
-  history: { prev: ImageData | null; next: ImageData | null } = {
-    prev: null,
-    next: null,
-  };
+  history: History = new History(this);
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   zoom: number = 25;
@@ -15,26 +99,17 @@ export default class App {
   layer: number = 0;
   color: number = 1;
   file: WizFile = new WizFile();
-  ui: HTMLElement = document.querySelector("#ui") as HTMLElement;
-  startupDialog = new DialogElement("DialogStartup");
-  helpDialog = new DialogElement("DialogHelp");
-  inputCommand = new InputCommand("InputCmd", this);
-  zoomElement = document.querySelector("#zoom") as HTMLInputElement;
+  palette: Palette = defaultPalette;
+  primaryColor: number[] = this.palette.getColor(0);
+  palettes: Palette[] = [this.palette];
+  ui: UI = new UI(this);
 
   constructor() {
     this.canvas = document.createElement("canvas") as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.canvas.style.backgroundColor = "white";
-    this.zoomElement.textContent = `${this.zoom * 100}%`;
     this.canvas.width = this.file.width;
     this.canvas.height = this.file.height;
-
-    if (
-      !window.localStorage.getItem("startup") ||
-      window.localStorage.getItem("startup") === "true"
-    ) {
-      this.startupDialog.open();
-    }
 
     //zoom canvas
 
@@ -56,8 +131,8 @@ export default class App {
       for (let y = 0; y < 16; y++) {
         for (let x = 0; x < 16; x++) {
           const color = this.file.palette
-            ? this.file.palette[this.file.data[l][y][x]]
-            : defaultPalette[this.file.data[l][y][x]];
+            ? this.file.palette.getColor(this.file.data[l].data[y][x])
+            : defaultPalette.getColor(this.file.data[l].data[y][x]);
 
           const index = (y * 16 + x) * 4;
 
@@ -73,34 +148,34 @@ export default class App {
 
     // ability to draw pixel with mouse click
     this.canvas.addEventListener("click", (e) => {
-      this.savePrevRev(this.ctx.getImageData(0, 0, 16, 16));
+      this.history.add(this.ctx.getImageData(0, 0, 16, 16));
       const rect = this.canvas.getBoundingClientRect();
       const x = Math.floor((e.clientX - rect.left) / this.zoom);
       const y = Math.floor((e.clientY - rect.top) / this.zoom);
       const index = (y * 16 + x) * 4;
-      imageData.data[index] = 0;
-      imageData.data[index + 1] = 0;
-      imageData.data[index + 2] = 0;
-      imageData.data[index + 3] = 255;
+      imageData.data[index] = this.primaryColor[0];
+      imageData.data[index + 1] = this.primaryColor[1];
+      imageData.data[index + 2] = this.primaryColor[2];
+      imageData.data[index + 3] = this.primaryColor[3];
       this.ctx.putImageData(imageData, 0, 0);
 
-      this.saveNextRev(this.ctx.getImageData(0, 0, 16, 16));
+      this.history.add(this.ctx.getImageData(0, 0, 16, 16));
     });
 
     // ability to draw pixel with mouse move
     this.canvas.addEventListener("mousemove", (e) => {
       if (e.buttons === 1) {
-        this.savePrevRev(this.ctx.getImageData(0, 0, 16, 16));
+        this.history.add(this.ctx.getImageData(0, 0, 16, 16));
         const rect = this.canvas.getBoundingClientRect();
         const x = Math.floor((e.clientX - rect.left) / this.zoom);
         const y = Math.floor((e.clientY - rect.top) / this.zoom);
         const index = (y * 16 + x) * 4;
-        imageData.data[index] = 0;
-        imageData.data[index + 1] = 0;
-        imageData.data[index + 2] = 0;
-        imageData.data[index + 3] = 255;
+        imageData.data[index] = this.primaryColor[0];
+        imageData.data[index + 1] = this.primaryColor[1];
+        imageData.data[index + 2] = this.primaryColor[2];
+        imageData.data[index + 3] = this.primaryColor[3];
         this.ctx.putImageData(imageData, 0, 0);
-        this.saveNextRev(this.ctx.getImageData(0, 0, 16, 16));
+        this.history.add(this.ctx.getImageData(0, 0, 16, 16));
       }
     });
 
@@ -120,19 +195,56 @@ export default class App {
         return;
       }
 
+      if (e.metaKey && e.key === "0") {
+        e.preventDefault();
+        this.zoomReset();
+
+        return;
+      }
+
+      if (e.metaKey && e.key === "z") {
+        e.preventDefault();
+        this.undo();
+
+        return;
+      }
+
       switch (e.key) {
+        // if hold space and move mouse, move canvas
+        case "Space":
+          if (!this.ui.inputCommand.element.classList.contains("open")) {
+            e.preventDefault();
+            this.canvas.style.cursor = "grab";
+            this.canvas.addEventListener("mousemove", (e) => {
+              if (e.buttons === 1) {
+                this.canvas.style.cursor = "grabbing";
+                this.canvas.style.left = `${e.movementX}px`;
+                this.canvas.style.top = `${e.movementY}px`;
+              }
+            });
+          }
+          break;
         case "?":
           e.preventDefault();
-          this.helpDialog.toggle();
+          this.ui.helpDialog.toggle();
           break;
         case "Escape":
           e.preventDefault();
 
-          if (this.inputCommand.element.classList.contains("open")) {
-            this.inputCommand.close();
+          if (this.ui.inputCommand.element.classList.contains("open")) {
+            this.ui.inputCommand.close();
           } else {
-            this.inputCommand.open();
+            this.ui.inputCommand.open();
           }
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          this.canvas.style.cursor = "default";
+          break;
       }
     });
 
@@ -142,25 +254,23 @@ export default class App {
   update() {
     this.canvas.style.width = `${this.file.width * this.zoom}px`;
     this.canvas.style.height = `${this.file.height * this.zoom}px`;
-    this.zoomElement.textContent = `${this.zoom * 100}%`;
+
+    this.ui.update();
   }
 
   newFile() {
     console.log("new");
   }
 
+  saveFile() {
+    console.log("save");
+  }
+
   undo() {
-    if (this.history.prev) {
-      console.log("undo");
-      this.ctx.putImageData(this.history.prev, 0, 0);
-    }
+    this.history.undo();
   }
-  redo() {}
-  savePrevRev(rev: ImageData | null) {
-    this.history.prev = rev;
-  }
-  saveNextRev(rev: ImageData | null) {
-    this.history.next = rev;
+  redo() {
+    this.history.redo();
   }
 
   zoomChange(dt: number = 0) {
@@ -171,12 +281,22 @@ export default class App {
 
   zoomIn() {
     console.log("zoom in");
-    this.zoomChange(1);
+    if (this.zoom < 128) {
+      this.zoomChange(1);
+    }
   }
 
   zoomOut() {
     console.log("zoom out");
-    this.zoomChange(-1);
+    if (this.zoom > 1) {
+      this.zoomChange(-1);
+    }
+  }
+
+  zoomReset() {
+    console.log("zoom reset");
+    this.zoom = 25;
+    this.update();
   }
 
   changeTool(tool: "pencil" | "eraser") {

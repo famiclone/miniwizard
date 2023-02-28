@@ -24,6 +24,7 @@ body {
   height: 100vh;
   font-family: monospace;
   font-size: var(--font-size);
+  overflow: hidden;
 }
 
 main {
@@ -57,6 +58,7 @@ main {
 .tool-block {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 #zoom {
@@ -130,9 +132,51 @@ hr {
 }
 
 .input--cmd {
+  background-color: var(--bg-color);
   display: none;
 }
 
 .input--cmd.open {
   display: block;
+}
+
+.status-line {
+  height: 19px;
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  padding: 0 0.5rem;
+  display: none;
+}
+
+.status-line.open {
+  display: block;
+}
+
+.colors {
+  position: relative;
+}
+
+.palette {
+  width: 256px;
+  height: 128px;
+  background-color: var(--bg-color);
+  border-radius: 0.5rem;
+  border: 1px solid var(--mid-color);
+  color: var(--fg-color);
+}
+
+.palette--current {
+  position: absolute;
+  bottom: 21px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.palette-wrap {
+  display: flex;
+}
+
+.palette-wrap .color-swatch {
+  width: 21px;
+  height: 21px;
 }
