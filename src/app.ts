@@ -1,120 +1,38 @@
-import DialogElement from "./dialog";
 import { WizFile } from "./file";
-import InputCommand from "./input-command";
+import History from "./history";
 import Palette, { defaultPalette } from "./palette";
-
-class History {
-  items: ImageData[] = [];
-  cursor: number = this.items.length - 1;
-
-  constructor(private app: App) {}
-
-  add(item: ImageData) {
-    this.items.push(item);
-    this.cursor = this.items.length - 1;
-  }
-
-  clearFromCursor() {
-    this.items.splice(this.cursor + 1);
-  }
-
-  undo() {
-    if (this.cursor > 0) {
-      this.cursor--;
-      this.app.ctx.putImageData(this.items[this.cursor], 0, 0);
-    }
-  }
-
-  redo() {
-    if (this.cursor < this.items.length - 1) {
-      this.cursor++;
-      this.app.ctx.putImageData(this.items[this.cursor], 0, 0);
-    }
-  }
-}
-
-class UI {
-  startupDialog = new DialogElement("DialogStartup");
-  helpDialog = new DialogElement("DialogHelp");
-  inputCommand = new InputCommand("InputCmd", this.app);
-  zoomElement = document.querySelector("#zoom") as HTMLInputElement;
-  primaryColorElement = document.querySelector("#toolPrColor") as HTMLElement;
-  statusLine = document.querySelector("#statusLine") as HTMLElement;
-  paletteDialog = new DialogElement("DialogPalette");
-  paletteWrap = document.querySelector("#paletteWrap") as HTMLElement;
-  paletteTitle = document.querySelector("#paletteTitle") as HTMLElement;
-  to: any;
-
-  constructor(private app: App) {
-    this.app = app;
-    if (
-      !window.localStorage.getItem("startup") ||
-      window.localStorage.getItem("startup") === "true"
-    ) {
-      this.startupDialog.open();
-    }
-
-    this.update();
-  }
-
-  renderPalette() {
-    this.paletteWrap.innerHTML = "";
-    this.paletteTitle.textContent = this.app.palette.name;
-    this.app.palette.colors.forEach((color, index) => {
-      const el = document.createElement("div");
-      el.classList.add("color-swatch");
-      el.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
-      this.paletteWrap.append(el);
-      el.addEventListener("click", () => {
-        this.app.primaryColor = color;
-        this.update();
-      });
-    });
-  }
-
-  log(msg: string) {
-    this.to && clearTimeout(this.to);
-    this.statusLine.classList.add("open");
-    this.statusLine.textContent = msg;
-
-    this.to = setTimeout(() => {
-      this.statusLine.classList.remove("open");
-      this.statusLine.textContent = "";
-    }, 2000);
-  }
-
-  update() {
-    this.renderPalette();
-    this.zoomElement.textContent = `${this.app.zoom * 100}%`;
-    this.primaryColorElement.style.backgroundColor = `rgba(${this.app.primaryColor[0]}, ${this.app.primaryColor[1]}, ${this.app.primaryColor[2]}, ${this.app.primaryColor[3]})`;
-  }
-}
+import UI from "./ui";
 
 export default class App {
   history: History = new History(this);
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   zoom: number = 25;
-  tool: "pencil" | "eraser" = "pencil";
-  layer: number = 0;
+  tool: "pencil" | "eraser" | "bucket" = "pencil";
   color: number = 1;
-  file: WizFile = new WizFile();
+  files: WizFile[] = [new WizFile(), new WizFile()];
+  fileIndex: number = 0;
   palette: Palette = defaultPalette;
   primaryColor: number[] = this.palette.getColor(0);
   palettes: Palette[] = [this.palette];
   ui: UI = new UI(this);
+  layerIndex: number = 0;
 
   constructor() {
     this.canvas = document.createElement("canvas") as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.canvas.style.backgroundColor = "white";
-    this.canvas.width = this.file.width;
-    this.canvas.height = this.file.height;
+    this.canvas.width = this.files[this.fileIndex].width;
+    this.canvas.height = this.files[this.fileIndex].height;
 
     //zoom canvas
 
-    this.canvas.style.width = `${this.file.width * this.zoom}px`;
-    this.canvas.style.height = `${this.file.height * this.zoom}px`;
+    this.canvas.style.width = `${
+      this.files[this.fileIndex].width * this.zoom
+    }px`;
+    this.canvas.style.height = `${
+      this.files[this.fileIndex].height * this.zoom
+    }px`;
     this.canvas.style.imageRendering = "pixelated";
 
     // ability to zoom in and out with mouse wheel
@@ -127,12 +45,16 @@ export default class App {
 
     const imageData = this.ctx.createImageData(16, 16);
 
-    for (let l = 0; l > this.file.data.length; l++) {
+    for (let l = 0; l > this.files[this.fileIndex].data.length; l++) {
       for (let y = 0; y < 16; y++) {
         for (let x = 0; x < 16; x++) {
-          const color = this.file.palette
-            ? this.file.palette.getColor(this.file.data[l].data[y][x])
-            : defaultPalette.getColor(this.file.data[l].data[y][x]);
+          const color = this.files[this.fileIndex].palette
+            ? this.files[this.fileIndex].palette.getColor(
+                this.files[this.fileIndex].data[l].data[y][x]
+              )
+            : defaultPalette.getColor(
+                this.files[this.fileIndex].data[l].data[y][x]
+              );
 
           const index = (y * 16 + x) * 4;
 
@@ -153,6 +75,8 @@ export default class App {
       const x = Math.floor((e.clientX - rect.left) / this.zoom);
       const y = Math.floor((e.clientY - rect.top) / this.zoom);
       const index = (y * 16 + x) * 4;
+
+      //this.files[this.fileIndex].data[this.layerIndex].data[y][x] = this.color;
       imageData.data[index] = this.primaryColor[0];
       imageData.data[index + 1] = this.primaryColor[1];
       imageData.data[index + 2] = this.primaryColor[2];
@@ -170,6 +94,9 @@ export default class App {
         const x = Math.floor((e.clientX - rect.left) / this.zoom);
         const y = Math.floor((e.clientY - rect.top) / this.zoom);
         const index = (y * 16 + x) * 4;
+        //this.files[this.fileIndex].data[this.layerIndex].data[y][x] =
+         // this.color;
+
         imageData.data[index] = this.primaryColor[0];
         imageData.data[index + 1] = this.primaryColor[1];
         imageData.data[index + 2] = this.primaryColor[2];
@@ -252,18 +179,60 @@ export default class App {
   }
 
   update() {
-    this.canvas.style.width = `${this.file.width * this.zoom}px`;
-    this.canvas.style.height = `${this.file.height * this.zoom}px`;
+    this.canvas.style.width = `${
+      this.files[this.fileIndex].width * this.zoom
+    }px`;
+    this.canvas.style.height = `${
+      this.files[this.fileIndex].height * this.zoom
+    }px`;
 
     this.ui.update();
+  }
+
+  fill(
+    startX: number,
+    startY: number,
+    targetColor: number,
+    replaceColor: number
+  ) {
+    const matrix = this.files[this.fileIndex].data[this.layerIndex].data;
+
+    // Check if the start coordinates are out of bounds
+    if (
+      startX < 0 ||
+      startX >= matrix.length ||
+      startY < 0 ||
+      startY >= matrix[0].length
+    ) {
+      return;
+    }
+
+    // Check if the target value matches the replacement value
+    if (matrix[startX][startY] === replaceColor) {
+      return;
+    }
+
+    // Check if the current value matches the target value
+    if (matrix[startX][startY] !== targetColor) {
+      return;
+    }
+
+    // Replace the current value with the replacement value
+    matrix[startX][startY] = replaceColor;
+
+    // Recursively fill adjacent cells
+    this.fill(startX + 1, startY, targetColor, replaceColor); // Right
+    this.fill(startX - 1, startY, targetColor, replaceColor); // Left
+    this.fill(startX, startY + 1, targetColor, replaceColor); // Down
+    this.fill(startX, startY - 1, targetColor, replaceColor); // Up
   }
 
   newFile() {
     console.log("new");
   }
 
-  saveFile() {
-    console.log("save");
+  saveFile(type: string) {
+    console.log("save file as " + type);
   }
 
   undo() {

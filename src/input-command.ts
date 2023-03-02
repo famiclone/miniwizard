@@ -6,8 +6,8 @@ export default class InputCommand {
       this.app.newFile();
     }, // new
     e: () => {}, // open
-    w: () => {
-      this.app.saveFile();
+    w: (type: string) => {
+      this.app.saveFile(type);
     }, // save
     h: () => {
       this.app.ui.helpDialog.toggle();

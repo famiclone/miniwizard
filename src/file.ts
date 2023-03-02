@@ -11,6 +11,6 @@ export class WizFile {
     this.width = 16;
     this.height = 16;
     this.palette = defaultPalette;
-    this.data = [new Layer()];
+    this.data = [new Layer("Background", true)];
   }
 }
