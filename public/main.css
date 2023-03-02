@@ -52,8 +52,6 @@ main {
   background-color: var(--mid-color);
   display: flex;
   justify-content: space-between;
-  position: absolute;
-  bottom: 0;
   width: 100%;
 }
 

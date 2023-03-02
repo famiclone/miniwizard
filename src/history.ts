@@ -16,16 +16,16 @@ export default class History {
   }
 
   undo() {
-    if (this.cursor > 0) {
-      this.cursor--;
-      this.app.ctx.putImageData(this.items[this.cursor], 0, 0);
-    }
+  //  if (this.cursor > 0) {
+  //    this.cursor--;
+  //    this.app.files[this.app.fileIndex].data.putImageData(this.items[this.cursor], 0, 0);
+  //  }
   }
 
   redo() {
-    if (this.cursor < this.items.length - 1) {
-      this.cursor++;
-      this.app.ctx.putImageData(this.items[this.cursor], 0, 0);
-    }
+  //  if (this.cursor < this.items.length - 1) {
+  //    this.cursor++;
+  //    this.app.ctx.putImageData(this.items[this.cursor], 0, 0);
+  //  }
   }
 }
