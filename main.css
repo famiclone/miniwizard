@@ -39,7 +39,6 @@ main {
   position: absolute;
   bottom: 0;
   left: 0;
-
   width: 100%;
 }
 
@@ -53,6 +52,31 @@ main {
   background-color: var(--mid-color);
   display: flex;
   justify-content: space-between;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.tabs {
+  background-color: var(--mid-color);
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.tab {
+  padding: 0 0.5rem;
+  opacity: 0.5;
+}
+
+.tab button {
+  background: none;
+  border: none;
+  color: var(--fg-color);
+}
+
+.tab.active {
+  color: var(--green);
 }
 
 .tool-block {
@@ -157,7 +181,8 @@ hr {
 }
 
 .palette {
-  width: 256px;
+  width: 175px;
+  overflow-y: scroll;
   height: 128px;
   background-color: var(--bg-color);
   border-radius: 0.5rem;
@@ -174,6 +199,7 @@ hr {
 
 .palette-wrap {
   display: flex;
+  flex-wrap: wrap;
 }
 
 .palette-wrap .color-swatch {
