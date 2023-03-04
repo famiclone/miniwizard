@@ -18,6 +18,9 @@ export default class Renderer {
     this.canvas.width = this.app.files[this.app.fileIndex].width;
     this.canvas.height = this.app.files[this.app.fileIndex].height;
 
+    this.canvas.style.backgroundImage = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'><rect width='16' height='16' fill='none'/><rect x='0' y='0' width='8' height='8' fill='%23f0f0f0'/><rect x='8' y='8' width='8' height='8' fill='%23f0f0f0'/></svg>")`;
+    this.canvas.style.backgroundSize = "16px 16px";
+
     this.canvas.style.imageRendering = "pixelated";
     this.setZoom(this.zoom);
 
@@ -33,28 +36,6 @@ export default class Renderer {
       this.file.width,
       this.file.height
     );
-
-    const file = this.app.files[this.app.fileIndex];
-
-    for (let l = 0; l > file.data.length; l++) {
-      for (let y = 0; y < file.data[l].data.width; y++) {
-        for (let x = 0; x < file.data[l].data.height; x++) {
-          //const color = file.palette
-          //? file.palette.getColor(file.data[l].data[y][x])
-          //: defaultPalette.getColor(file.data[l].data[y][x]);
-          const color = defaultPalette.getColor(0);
-
-          const index = (y * 16 + x) * 4;
-
-          imageData.data[index] = color[0];
-          imageData.data[index + 1] = color[1];
-          imageData.data[index + 2] = color[2];
-          imageData.data[index + 3] = color[3];
-        }
-      }
-    }
-
-    this.ctx.putImageData(imageData, 0, 0);
 
     // ability to draw pixel with mouse click
     this.canvas.addEventListener("click", (e) => {
@@ -114,6 +95,46 @@ export default class Renderer {
   drawRect(x: number, y: number, w: number, h: number, color: string) {
     this.ctx.fillStyle = color;
     this.ctx.fillRect(x, y, w, h);
+  }
+
+  fill(
+    startX: number,
+    startY: number,
+    targetColor: number,
+    replaceColor: number
+  ) {
+    const matrix = this.file.data[this.app.layerIndex].data;
+
+    // Check if the start coordinates are out of bounds
+    if (
+      startX < 0 ||
+      startX >= matrix.width ||
+      startY < 0 ||
+      startY >= matrix.height
+    ) {
+      return;
+    }
+
+    const index = startY * matrix.width + startX;
+
+    // Check if the target value matches the replacement value
+    if (matrix.data[index] === replaceColor) {
+      return;
+    }
+
+    // Check if the current value matches the target value
+    if (matrix.data[index] !== targetColor) {
+      return;
+    }
+
+    // Replace the current value with the replacement value
+    matrix.data[index] = replaceColor;
+
+    // Recursively fill adjacent cells
+    this.fill(startX + 1, startY, targetColor, replaceColor); // Right
+    this.fill(startX - 1, startY, targetColor, replaceColor); // Left
+    this.fill(startX, startY + 1, targetColor, replaceColor); // Down
+    this.fill(startX, startY - 1, targetColor, replaceColor); // Up
   }
 
   setZoom(zoom: number) {
