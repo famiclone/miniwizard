@@ -4,21 +4,26 @@ import Palette, { defaultPalette } from "./palette";
 import Renderer from "./renderer";
 import UI from "./ui";
 
+const DEFAULT_WIDTH = 16;
+const DEFAULT_HEIGHT = 16;
+
 export default class App {
   history: History = new History(this);
   zoom: number = 25;
   tool: "pencil" | "eraser" | "bucket" = "pencil";
   color: number = 1;
-  files: WizFile[] = [new WizFile(), new WizFile()];
+  files: WizFile[] = [];
   fileIndex: number = 0;
   palette: Palette = defaultPalette;
   primaryColor: number[] = this.palette.getColor(0);
   palettes: Palette[] = [this.palette];
   ui: UI = new UI(this);
   layerIndex: number = 0;
-  renderer: Renderer = new Renderer(this);
-
+  renderer: Renderer;
   constructor() {
+    this.files.push(new WizFile(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+    this.renderer = new Renderer(this);
+
     this.setup();
   }
 
@@ -111,25 +116,27 @@ export default class App {
     // Check if the start coordinates are out of bounds
     if (
       startX < 0 ||
-      startX >= matrix.length ||
+      startX >= matrix.width ||
       startY < 0 ||
-      startY >= matrix[0].length
+      startY >= matrix.height
     ) {
       return;
     }
 
+    const index = startY * matrix.width + startX;
+
     // Check if the target value matches the replacement value
-    if (matrix[startX][startY] === replaceColor) {
+    if (matrix.data[index] === replaceColor) {
       return;
     }
 
     // Check if the current value matches the target value
-    if (matrix[startX][startY] !== targetColor) {
+    if (matrix.data[index] !== targetColor) {
       return;
     }
 
     // Replace the current value with the replacement value
-    matrix[startX][startY] = replaceColor;
+    matrix.data[index] = replaceColor;
 
     // Recursively fill adjacent cells
     this.fill(startX + 1, startY, targetColor, replaceColor); // Right

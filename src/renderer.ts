@@ -7,6 +7,8 @@ export default class Renderer {
   _ctx: CanvasRenderingContext2D;
   zoom: number = 25;
   file: WizFile = this.app.files[this.app.fileIndex];
+  grid: boolean = true;
+  gridSize: number = 16;
 
   constructor(public app: App) {
     this._canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -27,16 +29,20 @@ export default class Renderer {
 
     document.body.querySelector("#main")!.append(this.canvas);
 
-    const imageData = this.ctx.createImageData(16, 16);
+    const imageData = this.ctx.createImageData(
+      this.file.width,
+      this.file.height
+    );
 
     const file = this.app.files[this.app.fileIndex];
 
     for (let l = 0; l > file.data.length; l++) {
-      for (let y = 0; y < 16; y++) {
-        for (let x = 0; x < 16; x++) {
-          const color = file.palette
-            ? file.palette.getColor(file.data[l].data[y][x])
-            : defaultPalette.getColor(file.data[l].data[y][x]);
+      for (let y = 0; y < file.data[l].data.width; y++) {
+        for (let x = 0; x < file.data[l].data.height; x++) {
+          //const color = file.palette
+          //? file.palette.getColor(file.data[l].data[y][x])
+          //: defaultPalette.getColor(file.data[l].data[y][x]);
+          const color = defaultPalette.getColor(0);
 
           const index = (y * 16 + x) * 4;
 
@@ -52,11 +58,13 @@ export default class Renderer {
 
     // ability to draw pixel with mouse click
     this.canvas.addEventListener("click", (e) => {
-      this.app.history.add(this.ctx.getImageData(0, 0, 16, 16));
+      this.app.history.add(
+        this.ctx.getImageData(0, 0, this.file.width, this.file.height)
+      );
       const rect = this.canvas.getBoundingClientRect();
       const x = Math.floor((e.clientX - rect.left) / this.zoom);
       const y = Math.floor((e.clientY - rect.top) / this.zoom);
-      const index = (y * 16 + x) * 4;
+      const index = (y * this.file.width + x) * 4;
 
       //this.files[this.fileIndex].data[this.layerIndex].data[y][x] = this.color;
       imageData.data[index] = this.app.primaryColor[0];
@@ -65,17 +73,21 @@ export default class Renderer {
       imageData.data[index + 3] = this.app.primaryColor[3];
       this.ctx.putImageData(imageData, 0, 0);
 
-      this.app.history.add(this.ctx.getImageData(0, 0, 16, 16));
+      this.app.history.add(
+        this.ctx.getImageData(0, 0, this.file.width, this.file.height)
+      );
     });
 
     // ability to draw pixel with mouse move
     this.canvas.addEventListener("mousemove", (e) => {
       if (e.buttons === 1) {
-        this.app.history.add(this.ctx.getImageData(0, 0, 16, 16));
+        this.app.history.add(
+          this.ctx.getImageData(0, 0, this.file.width, this.file.height)
+        );
         const rect = this.canvas.getBoundingClientRect();
         const x = Math.floor((e.clientX - rect.left) / this.zoom);
         const y = Math.floor((e.clientY - rect.top) / this.zoom);
-        const index = (y * 16 + x) * 4;
+        const index = (y * this.file.width + x) * 4;
         //this.files[this.fileIndex].data[this.layerIndex].data[y][x] =
         // this.color;
 
@@ -84,7 +96,9 @@ export default class Renderer {
         imageData.data[index + 2] = this.app.primaryColor[2];
         imageData.data[index + 3] = this.app.primaryColor[3];
         this.ctx.putImageData(imageData, 0, 0);
-        this.app.history.add(this.ctx.getImageData(0, 0, 16, 16));
+        this.app.history.add(
+          this.ctx.getImageData(0, 0, this.file.width, this.file.height)
+        );
       }
     });
   }
@@ -95,6 +109,11 @@ export default class Renderer {
 
   get ctx() {
     return this._ctx;
+  }
+
+  drawRect(x: number, y: number, w: number, h: number, color: string) {
+    this.ctx.fillStyle = color;
+    this.ctx.fillRect(x, y, w, h);
   }
 
   setZoom(zoom: number) {
