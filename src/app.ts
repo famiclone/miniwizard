@@ -105,13 +105,24 @@ export default class App {
     this.ui.update();
   }
 
-
   newFile() {
     console.log("new");
   }
 
   saveFile(type: string) {
-    console.log("save file as " + type);
+    if (type === "png") {
+      this.ui.log(`save file as ${type}`);
+      // save context as png
+
+      const link = document.createElement("a");
+      link.download = "image.png";
+      link.href = this.renderer.canvas.toDataURL("image/png");
+      link.click();
+
+      return;
+    }
+
+    this.ui.log(`filetype ${type} is not supported`);
   }
 
   undo() {
