@@ -105,52 +105,24 @@ export default class App {
     this.ui.update();
   }
 
-  fill(
-    startX: number,
-    startY: number,
-    targetColor: number,
-    replaceColor: number
-  ) {
-    const matrix = this.files[this.fileIndex].data[this.layerIndex].data;
-
-    // Check if the start coordinates are out of bounds
-    if (
-      startX < 0 ||
-      startX >= matrix.width ||
-      startY < 0 ||
-      startY >= matrix.height
-    ) {
-      return;
-    }
-
-    const index = startY * matrix.width + startX;
-
-    // Check if the target value matches the replacement value
-    if (matrix.data[index] === replaceColor) {
-      return;
-    }
-
-    // Check if the current value matches the target value
-    if (matrix.data[index] !== targetColor) {
-      return;
-    }
-
-    // Replace the current value with the replacement value
-    matrix.data[index] = replaceColor;
-
-    // Recursively fill adjacent cells
-    this.fill(startX + 1, startY, targetColor, replaceColor); // Right
-    this.fill(startX - 1, startY, targetColor, replaceColor); // Left
-    this.fill(startX, startY + 1, targetColor, replaceColor); // Down
-    this.fill(startX, startY - 1, targetColor, replaceColor); // Up
-  }
-
   newFile() {
     console.log("new");
   }
 
   saveFile(type: string) {
-    console.log("save file as " + type);
+    if (type === "png") {
+      this.ui.log(`save file as ${type}`);
+      // save context as png
+
+      const link = document.createElement("a");
+      link.download = "image.png";
+      link.href = this.renderer.canvas.toDataURL("image/png");
+      link.click();
+
+      return;
+    }
+
+    this.ui.log(`filetype ${type} is not supported`);
   }
 
   undo() {
