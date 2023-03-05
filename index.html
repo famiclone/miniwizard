@@ -3,10 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="main.css" />
-    <link rel="icon" type="image/png" href="miniwiz.png">
+    <link rel="icon" type="image/png" href="miniwiz.png" />
+    <title>Miniwizard - Pixel art editor</title>
   </head>
   <body>
-      <div class="tabs" id="tabs"></div>
+    <div class="tabs" id="tabs"></div>
     <main id="main"></main>
     <div id="ui">
       <div class="status-line" id="statusLine"></div>
@@ -29,6 +30,13 @@
         <div class="tool-block" id="zoom">100%</div>
       </div>
     </div>
+    <dialog class="layers" id="DialogLayers">
+      <div class="d-flex">
+        <div>Layers</div>
+        <button class="btn btn--icon" id="btnCloseDialogLayers">X</button>
+      </div>
+      <div class="layers-wrap" id="layersWrap"></div>
+    </dialog>
 
     <dialog class="dialog dialog-startup" id="DialogStartup">
       <div>
@@ -69,6 +77,8 @@
             <li><b>Cmd0</b> - Zoom reset</li>
             <li><b>:?</b> - Open help</li>
             <li><b>:p</b> - Open palette</li>
+            <li><b>:l</b> - Layers</li>
+            <li><b>:nl</b> - New layer</li>
             <li><b>:log message</b> - Log message</li>
             <!-- <li><b>:b / g / e</b> - Change tool (pencil/ bucket / eraser)</li> -->
           </ul>
