@@ -6,7 +6,7 @@ export default class Renderer {
   _canvas: HTMLCanvasElement;
   _ctx: CanvasRenderingContext2D;
   zoom: number = 25;
-  file: WizFile = this.app.files[this.app.fileIndex];
+  file: WizFile = this.app.currentFile;
   grid: boolean = true;
   gridSize: number = 16;
 

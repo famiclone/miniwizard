@@ -53,6 +53,8 @@ export default class UI {
   zoomElement = document.querySelector("#zoom") as HTMLInputElement;
   primaryColorElement = document.querySelector("#toolPrColor") as HTMLElement;
   statusLine = document.querySelector("#statusLine") as HTMLElement;
+  layersDialog = new DialogElement("DialogLayers");
+  layersWrap = document.querySelector("#layersWrap") as HTMLElement;
   paletteDialog = new DialogElement("DialogPalette");
   paletteWrap = document.querySelector("#paletteWrap") as HTMLElement;
   paletteTitle = document.querySelector("#paletteTitle") as HTMLElement;
@@ -69,7 +71,6 @@ export default class UI {
     }
 
     this.tabs.append(new Tab("Untitled").element);
-
 
     this.update();
   }
@@ -89,6 +90,25 @@ export default class UI {
     });
   }
 
+  renderLayers() {
+    this.layersWrap.innerHTML = "";
+    this.app.currentFile?.data.forEach((layer, index) => {
+      const el = document.createElement("div");
+      el.classList.add("layer");
+
+      if (index === this.app.layerIndex) {
+        el.classList.add("active");
+      }
+
+      el.textContent = layer.name;
+      el.addEventListener("click", () => {
+        this.app.layerIndex = index;
+        this.update();
+      });
+      this.layersWrap.append(el);
+    });
+  }
+
   log(msg: string) {
     this.to && clearTimeout(this.to);
     this.statusLine.classList.add("open");
@@ -101,8 +121,8 @@ export default class UI {
   }
 
   update() {
-
     this.renderPalette();
+    this.renderLayers();
     this.zoomElement.textContent = `${this.app.zoom * 100}%`;
     this.primaryColorElement.style.backgroundColor = `rgba(${this.app.primaryColor[0]}, ${this.app.primaryColor[1]}, ${this.app.primaryColor[2]}, ${this.app.primaryColor[3]})`;
   }

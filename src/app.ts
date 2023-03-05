@@ -1,11 +1,16 @@
 import { WizFile } from "./file";
 import History from "./history";
+import Layer from "./layer";
 import Palette, { defaultPalette } from "./palette";
 import Renderer from "./renderer";
 import UI from "./ui";
 
 const DEFAULT_WIDTH = 16;
 const DEFAULT_HEIGHT = 16;
+
+export type SaveOptions = {
+  scale: number;
+};
 
 export default class App {
   history: History = new History(this);
@@ -25,6 +30,10 @@ export default class App {
     this.renderer = new Renderer(this);
 
     this.setup();
+  }
+
+  get currentFile() {
+    return this.files[this.fileIndex];
   }
 
   setup() {
@@ -109,15 +118,38 @@ export default class App {
     console.log("new");
   }
 
-  saveFile(type: string) {
-    if (type === "png") {
-      this.ui.log(`save file as ${type}`);
-      // save context as png
+  newLayer() {
+    const layer = new Layer(
+      "Layer " + (this.currentFile.data.length + 1),
+      false,
+      this.currentFile.width,
+      this.currentFile.height
+    );
 
-      const link = document.createElement("a");
-      link.download = "image.png";
-      link.href = this.renderer.canvas.toDataURL("image/png");
-      link.click();
+    this.currentFile.data.push(layer);
+    this.layerIndex = this.currentFile.data.length - 1;
+
+    this.update();
+  }
+
+  saveFile(type: string, options: SaveOptions = { scale: 1 }) {
+    if (type === "png") {
+      const dataUrl = this.renderer.canvas.toDataURL("image/png");
+      const c = document.createElement("canvas");
+      const ctx = c.getContext("2d") as CanvasRenderingContext2D;
+      const img = new Image();
+      img.src = dataUrl;
+      img.onload = () => {
+        c.width = img.width * options.scale;
+        c.height = img.height * options.scale;
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        const a = document.createElement("a");
+        a.href = c.toDataURL("image/png");
+        a.download = "image.png";
+        a.click();
+      };
+
+      this.ui.log(`save file as ${type}`);
 
       return;
     }

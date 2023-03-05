@@ -1,13 +1,19 @@
-import App from "./app";
+import App, { SaveOptions } from "./app";
 
 export default class InputCommand {
   commands: { [key: string]: Function } = {
     n: () => {
       this.app.newFile();
     }, // new
+    nl: () => {
+      this.app.newLayer();
+    }, // new layer
+    l:  () => {
+      this.app.ui.layersDialog.toggle();
+    },
     e: () => {}, // open
-    w: (type: string) => {
-      this.app.saveFile(type);
+    w: (type: string, scale: string) => {
+      this.app.saveFile(type, { scale: parseInt(scale) });
     }, // save
     h: () => {
       this.app.ui.helpDialog.toggle();

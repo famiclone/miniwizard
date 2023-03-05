@@ -204,3 +204,19 @@ hr {
   width: 21px;
   height: 21px;
 }
+
+.layers {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 320px;
+}
+
+.layer {
+  border: 1px solid var(--mid-color);
+}
+
+.layer.active {
+  border-color: var(--red);
+  color : var(--red);
+}
