@@ -89,15 +89,6 @@ main {
   padding: 0px 0.5rem;
 }
 
-.dialog {
-  background-color: var(--bg-color);
-  border-radius: 0.5rem;
-  border: 1px solid var(--mid-color);
-  color: var(--fg-color);
-  min-width: 320px;
-  width: 700px;
-}
-
 .d-flex {
   display: flex;
   justify-content: space-between;
@@ -178,7 +169,7 @@ hr {
   position: relative;
 }
 
-.palette {
+.DialogPalette {
   width: 175px;
   overflow-y: scroll;
   height: 128px;
@@ -218,5 +209,5 @@ hr {
 
 .layer.active {
   border-color: var(--red);
-  color : var(--red);
+  color: var(--red);
 }

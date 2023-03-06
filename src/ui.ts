@@ -1,5 +1,5 @@
 import App from "./app";
-import DialogElement from "./dialog";
+import DialogElement from "./ui/dialog";
 import InputCommand from "./input-command";
 
 class Tab {
@@ -47,17 +47,21 @@ class Tab {
 }
 
 export default class UI {
-  startupDialog = new DialogElement("DialogStartup");
-  helpDialog = new DialogElement("DialogHelp");
+  _container = document.querySelector("body")!;
+  startupDialog = new DialogElement("Startup", this._container);
+  helpDialog = new DialogElement("Help", this._container);
   inputCommand = new InputCommand("InputCmd", this.app);
   zoomElement = document.querySelector("#zoom") as HTMLInputElement;
   primaryColorElement = document.querySelector("#toolPrColor") as HTMLElement;
   statusLine = document.querySelector("#statusLine") as HTMLElement;
-  layersDialog = new DialogElement("DialogLayers");
+  layersDialog = new DialogElement("Layers", this._container);
   layersWrap = document.querySelector("#layersWrap") as HTMLElement;
-  paletteDialog = new DialogElement("DialogPalette");
-  paletteWrap = document.querySelector("#paletteWrap") as HTMLElement;
-  paletteTitle = document.querySelector("#paletteTitle") as HTMLElement;
+  paletteDialog = new DialogElement("Palette", this._container);
+  paletteWrap = this.paletteDialog.element.querySelector("#DialogBodyPalette")!;
+  paletteTitle = this.paletteDialog.element.querySelector(
+    "#DialogTitlePalette"
+  )!;
+
   tabs: HTMLElement = document.querySelector("#tabs") as HTMLElement;
   to: any;
 
@@ -77,17 +81,22 @@ export default class UI {
 
   renderPalette() {
     this.paletteWrap.innerHTML = "";
+
+    const wrap = document.createElement("div");
+    wrap.className = "palette-wrap";
+
     this.paletteTitle.textContent = this.app.palette.name;
     this.app.palette.colors.forEach((color, index) => {
       const el = document.createElement("div");
       el.classList.add("color-swatch");
       el.style.backgroundColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
-      this.paletteWrap.append(el);
+      wrap.append(el);
       el.addEventListener("click", () => {
         this.app.primaryColor = color;
         this.update();
       });
     });
+    this.paletteWrap.append(wrap);
   }
 
   renderLayers() {
