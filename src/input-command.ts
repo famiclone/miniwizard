@@ -8,7 +8,7 @@ export default class InputCommand {
     nl: () => {
       this.app.newLayer();
     }, // new layer
-    l:  () => {
+    l: () => {
       this.app.ui.layersDialog.toggle();
     },
     e: () => {}, // open
@@ -26,6 +26,9 @@ export default class InputCommand {
     P: () => {}, // palettes
     log: (msg: string) => {
       this.app.ui.log(msg);
+    },
+    hs: () => {
+      this.app.ui.startupDialog.toggle();
     },
   };
 

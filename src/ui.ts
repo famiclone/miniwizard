@@ -2,6 +2,38 @@ import App from "./app";
 import DialogElement from "./ui/dialog";
 import InputCommand from "./input-command";
 
+const startupContent = `
+  <div>
+    <b
+      >2023 ©
+      <a target="_blank" href="https://famiclone.dev">famiclone.dev</a></b
+    >
+    <hr />
+    <br />
+    <div>
+      <b>Esc</b> - Command mode, <b>:new</b> - New file, <b>:h</b> - Open
+      help
+    </div>
+  </div>
+`;
+
+const helpContent = `
+  <div>
+    <ul>
+      <li><b>Escape</b> - Open console</li>
+      <li><b>Cmd+</b> - Zoom in</li>
+      <li><b>Cmd-</b> - Zoom out</li>
+      <li><b>Cmd0</b> - Zoom reset</li>
+      <li><b>:?</b> - Open help</li>
+      <li><b>:p</b> - Open palette</li>
+      <li><b>:l</b> - Layers</li>
+      <li><b>:nl</b> - New layer</li>
+      <li><b>:log message</b> - Log message</li>
+      <!-- <li><b>:b / g / e</b> - Change tool (pencil/ bucket / eraser)</li> -->
+    </ul>
+  </div>
+`;
+
 class Tab {
   element: HTMLElement;
   closeBtn: HTMLElement;
@@ -48,14 +80,23 @@ class Tab {
 
 export default class UI {
   _container = document.querySelector("body")!;
-  startupDialog = new DialogElement("Startup", this._container);
-  helpDialog = new DialogElement("Help", this._container);
+  startupDialog = new DialogElement(
+    "Startup",
+    this._container,
+    "miniwizard",
+    startupContent
+  );
+
+  helpDialog = new DialogElement("Help", this._container, "Help", helpContent);
+
   inputCommand = new InputCommand("InputCmd", this.app);
   zoomElement = document.querySelector("#zoom") as HTMLInputElement;
   primaryColorElement = document.querySelector("#toolPrColor") as HTMLElement;
   statusLine = document.querySelector("#statusLine") as HTMLElement;
-  layersDialog = new DialogElement("Layers", this._container);
-  layersWrap = document.querySelector("#layersWrap") as HTMLElement;
+
+  layersDialog = new DialogElement("Layers", this._container, "Layers");
+  layersWrap = document.querySelector("#DialogBodyLayers") as HTMLElement;
+
   paletteDialog = new DialogElement("Palette", this._container);
   paletteWrap = this.paletteDialog.element.querySelector("#DialogBodyPalette")!;
   paletteTitle = this.paletteDialog.element.querySelector(

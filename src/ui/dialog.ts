@@ -15,17 +15,21 @@ export default class DialogElement {
     </style>
 
     <div class="d-flex" id="DialogHeader${this.name}">
-      <div id="DialogTitle${this.name}">Dialog</div>
+      <div id="DialogTitle${this.name}">${this.title}</div>
       <button class="btn btn--icon" id="BtnCloseDialog${this.name}">
         X
       </button>
     </div>
-    <div class="DialogBody DialogBody${this.name}" id="DialogBody${this.name}"></div>
+    <div class="DialogBody DialogBody${this.name}" id="DialogBody${this.name}">
+      ${this.content}
+    </div>
   `;
 
   constructor(
     public name: string,
     public container: HTMLElement,
+    public title: string = "Dialog",
+    public content: string = "",
     open: boolean = false
   ) {
     this.element = document.createElement("dialog")!;
