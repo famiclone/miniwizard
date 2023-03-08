@@ -34,8 +34,10 @@ export default class InputCommand {
 
   element: HTMLInputElement;
 
-  constructor(public selector: string, public app: App) {
-    this.element = document.querySelector(`#${selector}`) as HTMLInputElement;
+  constructor(public app: App) {
+    this.element = document.createElement("input") as HTMLInputElement;
+    this.element.id = "InputCommand";
+    this.app.ui._container.append(this.element);
 
     this.element.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {

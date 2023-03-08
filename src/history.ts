@@ -1,31 +1,42 @@
-import App from "./app";
+class HistoryNode {
+  timestamp: number = Date.now();
+  constructor(public data: ImageData) {}
+}
 
 export default class History {
-  items: ImageData[] = [];
-  cursor: number = this.items.length - 1;
+  max: number = 5;
+  stack: HistoryNode[] = [];
+  buffer: HistoryNode | null = null;
 
-  constructor(private app: App) {}
-
-  add(item: ImageData) {
-    this.items.push(item);
-    this.cursor = this.items.length - 1;
-  }
-
-  clearFromCursor() {
-    this.items.splice(this.cursor + 1);
+  add(data: ImageData) {
+    if (this.stack.length >= this.max) {
+      this.stack.shift();
+    }
+    this.stack.push(new HistoryNode(data));
   }
 
   undo() {
-  //  if (this.cursor > 0) {
-  //    this.cursor--;
-  //    this.app.files[this.app.fileIndex].data.putImageData(this.items[this.cursor], 0, 0);
-  //  }
+    if (this.stack.length > 0) {
+      this.buffer = this.stack.pop()!;
+
+      return this.buffer.data;
+    }
+
+    return null;
   }
 
   redo() {
-  //  if (this.cursor < this.items.length - 1) {
-  //    this.cursor++;
-  //    this.app.ctx.putImageData(this.items[this.cursor], 0, 0);
-  //  }
+    if (this.buffer) {
+      this.stack.push(this.buffer);
+      this.buffer = null;
+
+      return this.stack[this.stack.length - 1].data;
+    }
+
+    return null;
+  }
+
+  clear() {
+    this.stack = [];
   }
 }

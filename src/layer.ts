@@ -6,8 +6,8 @@ export default class Layer {
   constructor(
     public name: string = "New layer",
     public locked: boolean = false,
-    protected width: number,
-    protected height: number
+    public width: number,
+    public height: number
   ) {
     this.data = new ImageData(width, height);
   }

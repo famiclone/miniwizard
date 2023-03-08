@@ -1,5 +1,5 @@
 import App from "./app";
-import { WizFile } from "./file";
+import  WizFile  from "./file";
 import { defaultPalette } from "./palette";
 
 export default class Renderer {

@@ -1,4 +1,4 @@
-import { WizFile } from "./file";
+import WizFile from "./file";
 import History from "./history";
 import Layer from "./layer";
 import Palette, { defaultPalette } from "./palette";
@@ -13,7 +13,7 @@ export type SaveOptions = {
 };
 
 export default class App {
-  history: History = new History(this);
+  history: History = new History();
   zoom: number = 25;
   tool: "pencil" | "eraser" | "bucket" = "pencil";
   color: number = 1;

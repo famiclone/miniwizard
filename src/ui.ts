@@ -79,7 +79,7 @@ class Tab {
 }
 
 export default class UI {
-  _container = document.querySelector("body")!;
+  _container = document.createElement("div")!;
   startupDialog = new DialogElement(
     "Startup",
     this._container,
@@ -89,7 +89,7 @@ export default class UI {
 
   helpDialog = new DialogElement("Help", this._container, "Help", helpContent);
 
-  inputCommand = new InputCommand("InputCmd", this.app);
+  inputCommand = new InputCommand(this.app);
   zoomElement = document.querySelector("#zoom") as HTMLInputElement;
   primaryColorElement = document.querySelector("#toolPrColor") as HTMLElement;
   statusLine = document.querySelector("#statusLine") as HTMLElement;
@@ -108,6 +108,7 @@ export default class UI {
 
   constructor(private app: App) {
     this.app = app;
+    document.body.append(this._container);
     if (
       !window.localStorage.getItem("startup") ||
       window.localStorage.getItem("startup") === "true"
