@@ -1,4 +1,5 @@
 import App, { SaveOptions } from "./app";
+import UI from "./ui";
 
 export default class InputCommand {
   commands: { [key: string]: Function } = {
@@ -30,20 +31,28 @@ export default class InputCommand {
     hs: () => {
       this.app.ui.startupDialog.toggle();
     },
+    cs: (theme: string) => {
+      this.app.ui.setColorScheme(theme);
+    }
   };
 
+  app: App;
   element: HTMLInputElement;
 
-  constructor(public app: App) {
+  constructor(app: App) {
+    this.app = app;
     this.element = document.createElement("input") as HTMLInputElement;
     this.element.id = "InputCommand";
-    this.app.ui._container.append(this.element);
+    this.element.className = "input input--cmd"
+    console.log(this.app.ui);
 
+    this.app.ui._container.append(this.element);
+    
     this.element.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        this.execute(this.element.value);
-        this.close();
-      }
+    if (e.key === "Enter") {
+    this.execute(this.element.value);
+    this.close();
+    }
     });
   }
 

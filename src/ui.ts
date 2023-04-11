@@ -1,6 +1,5 @@
 import App from "./app";
 import DialogElement from "./ui/dialog";
-import InputCommand from "./input-command";
 
 const startupContent = `
   <div>
@@ -86,29 +85,30 @@ export default class UI {
     "miniwizard",
     startupContent
   );
-
+  colorScheme: string;
   helpDialog = new DialogElement("Help", this._container, "Help", helpContent);
 
-  inputCommand = new InputCommand(this.app);
   zoomElement = document.querySelector("#zoom") as HTMLInputElement;
   primaryColorElement = document.querySelector("#toolPrColor") as HTMLElement;
   statusLine = document.querySelector("#statusLine") as HTMLElement;
 
-  layersDialog = new DialogElement("Layers", this._container, "Layers");
-  layersWrap = document.querySelector("#DialogBodyLayers") as HTMLElement;
+  layersDialog = new DialogElement("Layers", this._container, "Layers")!;
+  layersWrap = this.layersDialog.element.querySelector(
+    "#DialogBodyLayers"
+  ) as HTMLElement;
 
   paletteDialog = new DialogElement("Palette", this._container);
   paletteWrap = this.paletteDialog.element.querySelector("#DialogBodyPalette")!;
-  paletteTitle = this.paletteDialog.element.querySelector(
-    "#DialogTitlePalette"
-  )!;
+  paletteTitle = this.paletteDialog.element.querySelector("#DialogTitlePalette")!;
 
   tabs: HTMLElement = document.querySelector("#tabs") as HTMLElement;
   to: any;
 
-  constructor(private app: App) {
+  constructor(public app: App) {
     this.app = app;
+    this.colorScheme = localStorage.getItem("colorscheme") || "dark";
     document.body.append(this._container);
+    this.setColorScheme(this.colorScheme);
     if (
       !window.localStorage.getItem("startup") ||
       window.localStorage.getItem("startup") === "true"
@@ -158,6 +158,27 @@ export default class UI {
       });
       this.layersWrap.append(el);
     });
+  }
+
+  setColorScheme(scheme: string) {
+    if (localStorage.getItem("colorscheme")) {
+
+        document.body.setAttribute(
+          "colorscheme",
+          scheme
+        );
+
+        localStorage.setItem("colorscheme", scheme);
+    } else {
+      document.body.setAttribute("colorscheme", scheme);
+      this.colorScheme = scheme;
+
+      localStorage.setItem("colorscheme", scheme);
+    }
+
+    //this.colorScheme = scheme;
+    //document.body.setAttribute("colorscheme", scheme);
+    //localStorage.setItem("colorscheme", scheme);
   }
 
   log(msg: string) {

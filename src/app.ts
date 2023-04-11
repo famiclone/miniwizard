@@ -1,5 +1,6 @@
 import WizFile from "./file";
 import History from "./history";
+import InputCommand from "./input-command";
 import Layer from "./layer";
 import Palette, { defaultPalette } from "./palette";
 import Renderer from "./renderer";
@@ -23,6 +24,7 @@ export default class App {
   primaryColor: number[] = this.palette.getColor(0);
   palettes: Palette[] = [this.palette];
   ui: UI = new UI(this);
+  inputCommand: InputCommand = new InputCommand(this);
   layerIndex: number = 0;
   renderer: Renderer;
   constructor() {
@@ -70,7 +72,7 @@ export default class App {
       switch (e.key) {
         // if hold space and move mouse, move canvas
         case "Space":
-          if (!this.ui.inputCommand.element.classList.contains("open")) {
+          if (!this.inputCommand.element.classList.contains("open")) {
             e.preventDefault();
             this.renderer.canvas.style.cursor = "grab";
             this.renderer.canvas.addEventListener("mousemove", (e) => {
@@ -89,10 +91,10 @@ export default class App {
         case "Escape":
           e.preventDefault();
 
-          if (this.ui.inputCommand.element.classList.contains("open")) {
-            this.ui.inputCommand.close();
+          if (this.inputCommand.element.classList.contains("open")) {
+            this.inputCommand.close();
           } else {
-            this.ui.inputCommand.open();
+            this.inputCommand.open();
           }
       }
     });
