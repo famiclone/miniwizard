@@ -13,6 +13,22 @@
   --font-size: 0.9rem;
 }
 
+body[colorscheme="dark"] {}
+:root body[colorscheme="light"] {
+  --bg-color: #f8f8f2;
+  --fg-color: #272822;
+  --mid-color: #3e3d32;
+  --yellow: #e6db74;
+  --orange: #fd971f;
+  --red: #f92672;
+  --magenta: #fd5ff0;
+  --violet: #ae81ff;
+  --blue: #66d9ef;
+  --cyan: #a1efe4;
+  --green: #a6e22e;
+  --font-size: 0.9rem;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -147,6 +163,9 @@ hr {
 .input--cmd {
   background-color: var(--bg-color);
   display: none;
+  position: absolute;
+  left: 0;
+  bottom: 16px;
 }
 
 .input--cmd.open {
