@@ -1,5 +1,8 @@
 import App from "./app";
 
+declare global {
+  interface Window { app: any; }
+}
+
 const app = new App();
-//@ts-ignore
 window.app = app;
