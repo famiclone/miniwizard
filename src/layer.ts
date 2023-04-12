@@ -4,10 +4,10 @@ export default class Layer {
   data: ImageData;
 
   constructor(
-    public name: string = "New layer",
+    public name: string = "New Layer",
     public locked: boolean = false,
-    public width: number,
-    public height: number
+    public width: number = 16,
+    public height: number = 16
   ) {
     this.data = new ImageData(width, height);
   }
